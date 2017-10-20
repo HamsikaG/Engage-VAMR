@@ -2,6 +2,7 @@
 var Alexa = require('alexa-sdk');
 var AWS = require('aws-sdk');
 var fs = require('fs');
+var https = require('https');
 var request = require('request').defaults({jar: true});
 
 exports.handler = function (event, context, callback) {
@@ -39,12 +40,87 @@ var handlers = {
         // console.log(test);
         // var t = JSON.parse(test);
         // console.log(t);
-        console.log("reading the file")
-        ("APA91bEMtLGWzeI-hoXDoUnhE6Bah-tlF2o1ixrJkpqDROeTbJMs6MNAu_vRmsQ6VsSazJrzs2Y0ZhWBscYNUrTI2ygk7yzc9CHn3HYJTVVwSuXEJy4j7plTvcdHM_1E9xIv89yQPA6fs9hDW4q7NIPkYzAjOi6DCw");
+
+        // ("APA91bEMtLGWzeI-hoXDoUnhE6Bah-tlF2o1ixrJkpqDROeTbJMs6MNAu_vRmsQ6VsSazJrzs2Y0ZhWBscYNUrTI2ygk7yzc9CHn3HYJTVVwSuXEJy4j7plTvcdHM_1E9xIv89yQPA6fs9hDW4q7NIPkYzAjOi6DCw");
+        // var request = new http.ClientRequest({
+        //     hostname: "https://gcm-http.googleapis.com/",
+        //     port: 80,
+        //     path: "gcm/send",
+        //     method: "POST",
+        //     headers: {
+        //         "Content-Type": "application/json",
+        //         "Content-Length": Buffer.byteLength(body)
+        //     }
+        // })
+
+        // request.end(body)
+
+    },
+    'StartMeeting': function() {
+        console.log("here");
+        var body = {
+            to: 'APA91bEMtLGWzeI-hoXDoUnhE6Bah-tlF2o1ixrJkpqDROeTbJMs6MNAu_vRmsQ6VsSazJrzs2Y0ZhWBscYNUrTI2ygk7yzc9CHn3HYJTVVwSuXEJy4j7plTvcdHM_1E9xIv89yQPA6fs9hDW4q7NIPkYzAjOi6DCw',
+            data: {
+                command: 'join'
+            }
+        };
+
+        // var headers = {
+        //     {
+        //     "Content-Type": "application/x-www-form-urlencoded",
+        //     "Content-Length": Buffer.byteLength(body)
+        //     }
+        // };
+
+        // var http_request = new http.ClientRequest({
+        //     hostname: "gcm-http.googleapis.com",
+        //     // port: 80,
+        //     path: "gcm/send",
+        //     method: "POST",
+        //     headers: {
+        //         "Content-Type": "application/json",
+        //         "Content-Length": Buffer.byteLength(body)
+        //     }
+        // });
+        // var postreq = https.request(options);
+        // postreq.write(body);
+        // postreq.end();
+        // http_request.end(JSON.stringify(body));
+
+
+
+        const options = {
+          hostname: 'gcm-http.googleapis.com',
+          port: 443,
+          path: '/gcm/send',
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'key=AAAAwlQzuSE:APA91bFMV-oykqeb_fsthz8Q0v3vxZ00o4uuJDIFdXRuMF0t6aP8cYe0PPcFWckbtx5MK35rTSNSd4dpOZSDvs8hflTPqhHsf_Y0lLoYLOKNQlV3yuaoCpZy8PVH4luWL1uGtFVEj8Dm'
+          }
+        };
+        const req = https.request(options, (res) => {
+          console.log('statusCode:', res.statusCode);
+          console.log('headers:', res.headers);
+          res.on('data', (d) => {
+            process.stdout.write(d);
+          });
+        });
+        req.on('error', (e) => {
+          console.error(e);
+        });
+        req.on('success', (s) => {
+          console.error(res);
+        });
+        req.write(JSON.stringify(body));
+        req.end();
+        console.log(JSON.stringify(body));
+
+        this.emit(':tell', 'joined the meeting');
     },
     'AMAZON.HelpIntent': function() {
-        var speechOutPut = 'Ask about the meeting';
-        this.emit(':ask', speechOutPut);
+        var speechOutPut = 'Commands available are join, mute, unmute, stop. Hope this is helpful.';
+        this.emit(':tell', speechOutPut);
     },
     'AMAZON.StopIntent': function() {
         this.emit(':tell', 'Ok, see you in the next meeting!');
