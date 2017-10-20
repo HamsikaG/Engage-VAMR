@@ -1,0 +1,56 @@
+<!doctype html>
+<!--
+ This page is shown when the extension button is clicked, because the
+ "browser_action" field in manifest.json contains the "default_popup" key with
+ value "popup.html".
+ -->
+<html>
+
+<head>
+  <title>Flipkart Price Tracker</title>
+  <style>
+  body {
+    font-family: "Segoe UI", "Lucida Grande", Tahoma, sans-serif;
+    font-size: 100%;
+    min-width: 500px;
+  }
+
+  .form-control {
+    margin-bottom: 15px;
+  }
+
+  .img-responsive {
+    margin: 0 auto;
+  }
+  </style>
+  <script src="bower_components/jquery/dist/jquery.min.js"></script>
+  <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css">
+  <script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+  <script src="js/index.js"></script>
+  <!--
+      - JavaScript and HTML must be in separate files: see our Content Security
+      - Policy documentation[1] for details and explanation.
+      -
+      - [1]: https://developer.chrome.com/extensions/contentSecurityPolicy
+     -->
+</head>
+
+<body>
+  <div class="container">
+    <!-- Setting the header -->
+    <div class="row">
+      <center>
+        <h3>Engage-VAMR</h3>
+        <h4>Connect To Hangouts Meeting through Alexa</h4>
+      </center>
+    </div>
+    <!-- Form for setting the product price range for getting notification -->
+    <div class="well">
+      <input class="form-control" id="connectID" placeholder="Enter Connection ID from Alexa App"></input>
+      <center>
+        <button class="btn btn-primary" id="submit" name="submit">Set Engage</button>
+      </center>
+    </div>
+</body>
+
+</html>

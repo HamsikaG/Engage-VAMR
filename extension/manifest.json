@@ -4,15 +4,25 @@
   "name": "Engage-VAMR",
   "description": "Control Google Meets With Alexa",
   "version": "1.0",
+  "icons": {
+      "128": "vamr-off.png"
+  },
+  "content_scripts": [{
+    "matches": ["https://meet.google.com/*"],
+    "run_at": "document_start",
+    "js": ["js/meet_controller.js"]
+  }],
   "background": {
     "scripts": ["js/background.js"],
     "persistent": false
   },
-  "page_action": {
+  "browser_action": {
     "default_icon": "vamr-off.png",
     "default_popup": "index.html"
   },
   "permissions": [
+    "gcm",
+    "storage",
     "activeTab",
     "*://*/*"
   ]
