@@ -15,7 +15,7 @@ chrome.gcm.onMessage.addListener(request => {
         }
         // ---- send each Meet tab a message, which is the hotkey command from manifest.json.
         // ---- this will always be "toggle", since that's the only one we defined.
-        chrome.tabs.sendMessage(tab.id, {request: self.request}, responseHandler)
+        chrome.tabs.sendMessage(tab.id, {data: self.request.data}, responseHandler)
       });
     })
   })
