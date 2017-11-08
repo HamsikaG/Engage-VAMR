@@ -5,7 +5,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   // find mute or unmute button on this Meeting page. only one of these will exist at a time
   const muteButton = document.querySelector("[aria-label='Turn off microphone']")
   const unmuteButton = document.querySelector("[aria-label='Turn on microphone']")
-  const hangupButton = document.querySelector("[jsname='Nl0j0e']")
+  const hangupButton = document.querySelector("[aria-label='Leave call']")
 
   // function for muting
 const mute = () => {
@@ -50,7 +50,7 @@ const endcall = () => {
   const btn = hangupButton
   if (btn !== null) {
     btn.click()
-    message = 'Microphone is ON'
+    message = 'Leaving call'
     icon = 'notmuted.png'
     sendResponse({
       notification:
@@ -80,7 +80,7 @@ const endcall = () => {
           const meeting = meeting_list.firstElementChild
           if (meeting !== null){
             meeting.click()
-            message = 'Joining Meating'
+            message = 'Joining Meeting'
             icon = 'notmuted.png'
             sendResponse({
               notification:
@@ -93,7 +93,7 @@ const endcall = () => {
             })
           }
           else {
-            message = 'No Meating'
+            message = 'No Meeting'
             icon = 'notmuted.png'
             sendResponse({
               notification:

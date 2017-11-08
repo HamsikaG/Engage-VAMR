@@ -25,14 +25,14 @@ function sendRegistrationId(registrationId, callback) {
 
   var parameters = {
     'connectID': self.connectID,
-    'resourceToken': registrationId
+    'registrationID': registrationId
   }
 
   $.ajax({
     type: 'POST',
     dataType: 'json',
     contentType: "application/json; charset=utf-8",
-    url: 'https://yag92cnm0k.execute-api.us-east-1.amazonaws.com/engagevamr/resource',
+    url: 'https://jlhgqgcvhd.execute-api.us-east-1.amazonaws.com/engageAPI/resource',
     data: JSON.stringify(parameters),
     success: function(d) {
       console.log(d);
@@ -52,8 +52,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     chrome.storage.local.get("registered", function(result) {
       // If already registered, bail out.
-      if (result["registered"])
-        return;
+      // if (result["registered"])
+      //   return;
 
       // Up to 100 senders are allowed.
       var senderIds = ["834636331297"];
