@@ -88,13 +88,11 @@ function setEngageButton(){
   $("#submit").addClass("btn-primary");
   $('#connectID').val("");
   $('#connectID').prop("disabled", false);
-  //$('#connectID').addClass("form-control");
 }
 
 function setDisengageButton(){
   chrome.storage.local.get("connectID", function(result) {
     $('#connectID').val(result["connectID"]);
-   // $('#connectID').removeClass("form-control");
     $('#connectID').prop("disabled", true);
   });
   $('#submit').text("Disengage"); 
