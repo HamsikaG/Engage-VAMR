@@ -48,8 +48,7 @@ function getWelcomeResponse(callback) {
     // If we wanted to initialize the session to have some attributes we could add those here.
     const sessionAttributes = {};
     const cardTitle = 'Welcome';
-    const speechOutput = 'Welcome to the Engage V A M R' +
-        'Please tell me which meeting you want to join';
+    const speechOutput = 'Welcome';
     // If the user either does not reply to the welcome message or says something that is not
     // understood, they will be prompted again with this text.
     const repromptText = 'Please tell me which meeting you want to join by saying, ' +
@@ -88,15 +87,51 @@ function joinMeetingInSession(intent, session, callback) {
 
     console.log("slot : " + Slot.value)
 
-    // if (Slot) {
-    //     const time = Slot.value;
-    //     sessionAttributes = joinMeeting(time);
-    //     speechOutput = `Joining ${time} meeting.`;
-    //     repromptText = `Joining ${time} meeting.`;
-    // } else {
-    //     speechOutput = "There isn't a meeting at this time";
-    //     repromptText = "There isn't a meeting at this time";
-    // }
+    if (Slot) {
+        const time = Slot.value;
+        sessionAttributes = joinMeeting(time);
+        speechOutput = `Joining ${time} meeting.`;
+        repromptText = `Joining ${time} meeting.`;
+        var https = require('https')
+        
+        var body = JSON.stringify( {
+         "to" : "APA91bGtEhorgUeGYEFw0_uAnz6qhGikg-6rvJWWY-8Nb3UwhjPpVOa_s694gbe_7lhaTa9qCyDn7Q4uqH-AgGx4ky3U29UUMVJWJ6x76kxVLtEPIqBYOXoWnoOoBSfyep78lfBeo_bH7giLaEbxzQ_5DTUlJtWuyA",
+                "data" : {
+                  "command": "join"
+                }
+        })
+
+        var options = {
+            method: 'POST',
+            hostname: 'gcm-http.googleapis.com',
+            path: '/gcm/send',
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "key=AAAAwlQzuSE:APA91bFMV-oykqeb_fsthz8Q0v3vxZ00o4uuJDIFdXRuMF0t6aP8cYe0PPcFWckbtx5MK35rTSNSd4dpOZSDvs8hflTPqhHsf_Y0lLoYLOKNQlV3yuaoCpZy8PVH4luWL1uGtFVEj8Dm",
+            } 
+        }
+        
+          var req =  https.request(options, function(res) {
+          console.log('Status: ' + res.statusCode);
+          console.log('Headers: ' + JSON.stringify(res.headers));
+          
+        //   res.on('data', function (body) {
+        //     console.log('Body: ' + body);
+        //   });
+        });
+        
+         req.on('error', function(e) {
+          console.log('problem with request: ' + e.message);
+        });
+        
+       req.end(body);
+      
+    } else {
+        speechOutput = "There isn't a meeting at this time";
+        repromptText = "There isn't a meeting at this time";
+    }
+
+
     
 
     callback(sessionAttributes,
