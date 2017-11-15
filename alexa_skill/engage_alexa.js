@@ -12,6 +12,9 @@
 
 // --------------- Helpers that build all of the responses -----------------------
 
+var AWS = require('aws-sdk');
+const fs = require('fs');
+
 function buildSpeechletResponse(title, output, repromptText, shouldEndSession) {
     return {
         outputSpeech: {
@@ -48,7 +51,7 @@ function getWelcomeResponse(callback) {
     // If we wanted to initialize the session to have some attributes we could add those here.
     const sessionAttributes = {};
     const cardTitle = 'Welcome';
-    const speechOutput = 'Welcome';
+    const speechOutput = 'Welcome to engage V A M';
     // If the user either does not reply to the welcome message or says something that is not
     // understood, they will be prompted again with this text.
     const repromptText = 'Please tell me which meeting you want to join by saying, ' +
@@ -74,61 +77,99 @@ function joinMeeting(time) {
     };
 }
 
-/**
- * Sets the color in the session and prepares the speech to reply to the user.
- */
-function joinMeetingInSession(intent, session, callback) {
+function sendCommand(body) {
+    
+    var options = {
+        method: 'POST',
+        hostname: 'gcm-http.googleapis.com',
+        path: '/gcm/send',
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": "key=AAAAwlQzuSE:APA91bFMV-oykqeb_fsthz8Q0v3vxZ00o4uuJDIFdXRuMF0t6aP8cYe0PPcFWckbtx5MK35rTSNSd4dpOZSDvs8hflTPqhHsf_Y0lLoYLOKNQlV3yuaoCpZy8PVH4luWL1uGtFVEj8Dm",
+        } 
+    }
+     
+    var https = require('https');
+      var req =  https.request(options, function(res) {
+      console.log('Status: ' + res.statusCode);
+      console.log('Headers: ' + JSON.stringify(res.headers));
+    });
+    
+     req.on('error', function(e) {
+      console.log('problem with request: ' + e.message);
+    });
+    
+    req.end(body);
+    
+}
+ 
+  function generateBody(connectID, commandobj, callback){
+       var s3 = new AWS.S3();
+     var params = { Bucket: 'engage-vamr2', Key: 'resource.json'};
+     var regID = null;
+        s3.getObject(params, function(err, data) {
+          if (err){
+              console.log("error is "+err, err.stack); // an error occurred
+          } 
+          else   
+            {    
+                var connectID ="hi";
+                console.log("File exists");
+                console.log("data: "+ data.Body.toString());
+                var obj = JSON.parse(data.Body.toString());
+
+                console.log(obj[connectID] + " is obj[connectID");
+                regID = obj[connectID];
+                console.log(regID+ " is regID");
+                
+                
+                commandobj.to = regID
+                callback(commandobj);
+            }
+        });
+      
+  }
+  
+function startMeetingInSession(intent, session, callback) {
     const cardTitle = intent.name;
     const Slot = intent.slots.time;
     let repromptText = '';
     let sessionAttributes = {};
-    const shouldEndSession = true;
+    const shouldEndSession = false;
     let speechOutput = '';
 
-    console.log("slot : " + Slot.value)
+    console.log("slot : " + Slot.value);
 
     if (Slot) {
         const time = Slot.value;
         sessionAttributes = joinMeeting(time);
-        speechOutput = `Joining ${time} meeting.`;
-        repromptText = `Joining ${time} meeting.`;
-        var https = require('https')
         
-        var body = JSON.stringify( {
-         "to" : "APA91bGtEhorgUeGYEFw0_uAnz6qhGikg-6rvJWWY-8Nb3UwhjPpVOa_s694gbe_7lhaTa9qCyDn7Q4uqH-AgGx4ky3U29UUMVJWJ6x76kxVLtEPIqBYOXoWnoOoBSfyep78lfBeo_bH7giLaEbxzQ_5DTUlJtWuyA",
+        var obj = {
                 "data" : {
-                  "command": "join"
+                  "command": "start"
                 }
-        })
+            };
 
-        var options = {
-            method: 'POST',
-            hostname: 'gcm-http.googleapis.com',
-            path: '/gcm/send',
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": "key=AAAAwlQzuSE:APA91bFMV-oykqeb_fsthz8Q0v3vxZ00o4uuJDIFdXRuMF0t6aP8cYe0PPcFWckbtx5MK35rTSNSd4dpOZSDvs8hflTPqhHsf_Y0lLoYLOKNQlV3yuaoCpZy8PVH4luWL1uGtFVEj8Dm",
-            } 
+        if(time)
+            {
+                speechOutput = `Starting ${time} meeting.`;
+                repromptText = `Starting ${time} meeting.`;
+                obj.data.time = time;
+            }
+        else
+        {
+            speechOutput = `Starting next meeting.`;
+            repromptText = `Starting next meeting.`; 
         }
-        
-          var req =  https.request(options, function(res) {
-          console.log('Status: ' + res.statusCode);
-          console.log('Headers: ' + JSON.stringify(res.headers));
-          
-        //   res.on('data', function (body) {
-        //     console.log('Body: ' + body);
-        //   });
+
+        generateBody("hi", obj, (commandobj) => {
+            var body = JSON.stringify(commandobj);
+            sendCommand(body);
         });
         
-         req.on('error', function(e) {
-          console.log('problem with request: ' + e.message);
-        });
-        
-       req.end(body);
-      
     } else {
-        speechOutput = "There isn't a meeting at this time";
-        repromptText = "There isn't a meeting at this time";
+        speechOutput = "There was an Issue starting meeting";
+        repromptText = "There was an Issue starting meeting";
     }
 
 
@@ -138,31 +179,147 @@ function joinMeetingInSession(intent, session, callback) {
          buildSpeechletResponse(cardTitle, speechOutput, repromptText, shouldEndSession));
 }
 
-// function joinMeetingInSession(intent, session, callback) {
-//     let time;
-//     const repromptText = null;
-//     const sessionAttributes = {};
-//     let shouldEndSession = false;
-//     let speechOutput = '';
+function joinMeetingInSession(intent, session, callback) {
+    const cardTitle = intent.name;
+    const Slot = intent.slots.time;
+    let repromptText = '';
+    let sessionAttributes = {};
+    const shouldEndSession = true;
+    let speechOutput = '';
 
-//     if (session.attributes) {
-//         time = session.attributes.time;
-//     }
+    console.log("slot : " + Slot.value);
 
-//     if (time) {
-//         speechOutput = "Joining ${time} meeting.";
-//         shouldEndSession = true;
-//     } else {
-//         speechOutput = "There was an issue joining meeting.";
-//     }
+    if (Slot) {
+        const time = Slot.value;
+        sessionAttributes = joinMeeting(time);
+        speechOutput = `Joining Meeting`;
+        repromptText = `Joining Meeting`;
+        
+        var obj = {
+                "data" : {
+                  "command": "join"
+                }
+            };
 
-//     // Setting repromptText to null signifies that we do not want to reprompt the user.
-//     // If the user does not respond or says something that is not understood, the session
-//     // will end.
-//     callback(sessionAttributes,
-//          buildSpeechletResponse(intent.name, speechOutput, repromptText, shouldEndSession));
-// }
+        generateBody("hi", obj, (commandobj) => {
+            var body = JSON.stringify(commandobj);
+            sendCommand(body);
+        });
+        
+    } else {
+        speechOutput = "Exiting Out of Meeting";
+        repromptText = "Exiting Out of Meeting";
+    }
 
+
+    
+
+    callback(sessionAttributes,
+         buildSpeechletResponse(cardTitle, speechOutput, repromptText, shouldEndSession));
+}
+
+
+function muteMeetingInSession(intent, session, callback) {
+    const cardTitle = intent.name;
+    let repromptText = '';
+    let sessionAttributes = {};
+    const shouldEndSession = true;
+    let speechOutput = '';  
+    if (cardTitle=='MuteMeeting') {
+       
+        speechOutput = `muting Meeting.`;
+        repromptText = `muting Meeting`;
+          
+        var obj = {
+                "data" : {
+                  "command": "mute"
+                }
+            };
+
+        generateBody("hi", obj, (commandobj) => {
+            var body = JSON.stringify(commandobj);
+            sendCommand(body);
+        });
+        
+    } else {
+        speechOutput = "cannot mute Meeting";
+        repromptText = "cannot mute Meeting";
+    }
+
+
+    
+
+    callback(sessionAttributes,
+         buildSpeechletResponse(cardTitle, speechOutput, repromptText, shouldEndSession));
+}
+
+function unmuteMeetingInSession(intent, session, callback) {
+    const cardTitle = intent.name;
+    let repromptText = '';
+    let sessionAttributes = {};
+    const shouldEndSession = true;
+    let speechOutput = ''; 
+    if (cardTitle=='UnMuteMeeting') {
+       
+        speechOutput = `Unmuting Meeting.`;
+        repromptText = `Unmuting Meeting`;
+        
+        var obj = {
+                "data" : {
+                  "command": "unmute"
+                }
+            };
+
+        generateBody("hi", obj, (commandobj) => {
+            var body = JSON.stringify(commandobj);
+            sendCommand(body);
+        });
+        
+    } else {
+        speechOutput = "cannot unmute Meeting";
+        repromptText = "cannot unmute Meeting";
+    }
+
+
+    
+
+    callback(sessionAttributes,
+         buildSpeechletResponse(cardTitle, speechOutput, repromptText, shouldEndSession));
+}
+
+function endMeetingInSession(intent, session, callback) {
+    const cardTitle = intent.name;
+    let repromptText = '';
+    let sessionAttributes = {};
+    const shouldEndSession = true;
+    let speechOutput = ''; 
+    if (cardTitle=='EndMeeting') {
+       
+        speechOutput = `Ending Meeting.`;
+        repromptText = `Ending Meeting`;
+        
+        var obj = {
+                "data" : {
+                  "command": "end"
+                }
+            };
+
+        generateBody("hi", obj, (commandobj) => {
+            var body = JSON.stringify(commandobj);
+            sendCommand(body);
+        });
+        
+    } else {
+        speechOutput = "cannot end Meeting";
+        repromptText = "cannot end Meeting";
+    }
+
+
+    
+
+    callback(sessionAttributes,
+         buildSpeechletResponse(cardTitle, speechOutput, repromptText, shouldEndSession));
+}
 
 // --------------- Events -----------------------
 
@@ -193,13 +350,22 @@ function onIntent(intentRequest, session, callback) {
     const intentName = intentRequest.intent.name;
 
     // Dispatch to your skill's intent handlers
-    if (intentName === 'JoinMeetingRoom') {
+        if (intentName === 'StartMeeting') {
+            startMeetingInSession(intent, session, callback); 
+        }
+        else if (intentName === 'JoinMeetingRoom'){ 
         joinMeetingInSession(intent, session, callback); 
-    //else if (intentName === 'WhatsMyColorIntent') {
-    //     getColorFromSession(intent, session, callback);
-    // } else if (intentName === 'AMAZON.HelpIntent') {
-    //     getWelcomeResponse(callback);
-    } else if (intentName === 'AMAZON.StopIntent' || intentName === 'AMAZON.CancelIntent') {
+        }
+         else if (intentName === 'MuteMeeting'){ 
+        muteMeetingInSession(intent, session, callback); 
+        }
+         else if (intentName === 'UnMuteMeeting'){ 
+        unmuteMeetingInSession(intent, session, callback); 
+        }
+         else if (intentName === 'EndMeeting'){ 
+        endMeetingInSession(intent, session, callback); 
+        }
+     else if (intentName === 'AMAZON.StopIntent' || intentName === 'AMAZON.CancelIntent') {
          handleSessionEndRequest(callback);
     } 
     else {

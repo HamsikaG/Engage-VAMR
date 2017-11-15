@@ -65,22 +65,31 @@ const endcall = () => {
 }
 
   if (request.data.command === 'mute') {
+    const muteButton = document.querySelector("[jsname='BOHaEe']") 
       if (muteButton !== null) {  // if the mute button exists, then the Mic is currently unmuted.
-        mute()
+        muteButton.click();
       }
   }
   else if (request.data.command === 'unmute') {
-    if (muteButton === null) {  // if the mute button exists, then the Mic is currently unmuted.
-      unmute()
+    const muteButton = document.querySelector("[jsname='BOHaEe']") 
+    if (muteButton !== null) {  // if the mute button exists, then the Mic is currently unmuted.
+      muteButton.click();
     }
-  }
-  else if (request.data.command === 'join') {
+  } 
+  else if (request.data.command === 'end') {
+    const endButton = document.querySelector("[jsname='CQylAd']") 
+    if (endButton !== null) {  // if the mute button exists, then the Mic is currently unmuted.
+      endButton.click();
+    }
+  } 
+  else if (request.data.command === 'start') {
     const meeting_list = document.querySelector("[jsname='S0Vhi']")
     if(meeting_list !== null && meeting_list.hasChildNodes()){
+    //  const meeting = document.querySelector("[aria-label='10:00 PM to 11:00 PM. tEST.']");
           const meeting = meeting_list.firstElementChild
           if (meeting !== null){
             meeting.click()
-            message = 'Joining Meeting'
+            message = 'Starting Meeting'
             icon = 'notmuted.png'
             sendResponse({
               notification:
@@ -107,6 +116,36 @@ const endcall = () => {
           }
 
         }
+  }
+  else if (request.data.command === 'join') {
+    const joinbutton = document.querySelector("[jsname='Qx7uuf']")
+    if (joinbutton !== null){
+      joinbutton.click()
+      message = 'Joining Meeting'
+      icon = 'notmuted.png'
+      sendResponse({
+        notification:
+        {
+          type: 'basic',
+          iconUrl: icon,
+          title: message,
+          message: ''
+        }
+      })
+    }
+    else {
+      message = 'No Meeting'
+      icon = 'notmuted.png'
+      sendResponse({
+        notification:
+        {
+          type: 'basic',
+          iconUrl: icon,
+          title: message,
+          message: ''
+        }
+      })
+    }
   }
   else if (request.data.command === 'hangup') {
     if (hangupButton !== null) {  // if the mute button exists, then the Mic is currently unmuted.
