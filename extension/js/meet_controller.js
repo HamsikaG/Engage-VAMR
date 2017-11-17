@@ -99,9 +99,9 @@ const endcall = () => {
     const meeting_list = document.querySelector("[jsname='S0Vhi']")
     var meeting = null;
     if(meeting_list !== null && meeting_list.hasChildNodes()){
-      meeting = meeting_list.firstElementChild;
+    
       
-      if(request.data.time!=null)  
+      if(request.data.time!=null) { 
         var searchText = tConvert (request.data.time);
         var elms = document.querySelector("[jsname='S0Vhi']").getElementsByTagName("div");
         for (var i = 0; i < elms.length; i++) {
@@ -110,7 +110,10 @@ const endcall = () => {
                meeting = elms[i];
             }
         }
-        
+      }
+      else {
+        meeting = meeting_list.firstElementChild;
+      }
           if (meeting !== null){
            meeting.click()
             message = 'Starting Meeting'
