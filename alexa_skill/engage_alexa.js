@@ -152,13 +152,13 @@ function startMeetingInSession(intent, session, callback) {
 
         if(time)
             {
-                speechOutput = `Starting ${time} meeting.`;
+                speechOutput = `Starting ${time} meeting. Would you like me to join the meeting? Please say join meeting. `;
                 repromptText = `Starting ${time} meeting.`;
                 obj.data.time = time;
             }
         else
         {
-            speechOutput = `Starting next meeting.`;
+            speechOutput = `Starting next meeting. Would you like me to join the meeting? Please say join meeting.`;
             repromptText = `Starting next meeting.`; 
         }
 
